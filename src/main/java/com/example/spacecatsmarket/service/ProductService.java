@@ -1,0 +1,14 @@
+package com.example.spacecatsmarket.service;
+
+import com.example.spacecatsmarket.dto.ProductCreateDto;
+import com.example.spacecatsmarket.dto.ProductDto;
+import com.example.spacecatsmarket.dto.ProductListResponseDto;
+import java.util.UUID;
+
+public interface ProductService {
+    ProductListResponseDto getAllProducts(int page, int size);
+    ProductDto getProductById(String id);
+    ProductDto createProduct(ProductCreateDto dto);
+    ProductDto updateProduct(String id, ProductCreateDto dto);
+    void deleteProduct(String id);
+}

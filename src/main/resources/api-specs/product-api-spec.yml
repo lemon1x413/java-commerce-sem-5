@@ -1,0 +1,252 @@
+openapi: 3.0.3
+info:
+  title: Cosmo Cats Product API
+  description: API for managing intergalactic marketplace products
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+
+paths:
+  /api/v1/products:
+    get:
+      summary: Get paginated list of products
+      operationId: getAllProducts
+      tags:
+        - Products
+      parameters:
+        - name: page
+          in: query
+          description: Page number (zero-based)
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: size
+          in: query
+          description: Page size
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Paginated list of products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponseDto'
+
+    post:
+      summary: Create a new product
+      operationId: createProduct
+      tags:
+        - Products
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateDto'
+      responses:
+        '201':
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDto'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /api/v1/products/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Product UUID
+        schema:
+          type: string
+          format: uuid
+
+    get:
+      summary: Get product by ID
+      operationId: getProductById
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Product found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDto'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+    put:
+      summary: Update an existing product
+      operationId: updateProduct
+      tags:
+        - Products
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateDto'
+      responses:
+        '200':
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDto'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+    delete:
+      summary: Delete a product
+      operationId: deleteProduct
+      tags:
+        - Products
+      responses:
+        '204':
+          description: Product deleted successfully
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+components:
+  schemas:
+    ProductDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique product identifier
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Product name (must contain a cosmic term)
+        description:
+          type: string
+          maxLength: 500
+          description: Product description
+        price:
+          type: number
+          format: double
+          minimum: 0
+          exclusiveMinimum: true
+          description: Product price
+        categoryId:
+          type: string
+          format: uuid
+          description: Category identifier
+        categoryName:
+          type: string
+          description: Category display name
+      required:
+        - id
+        - name
+        - price
+        - categoryId
+
+    ProductCreateDto:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Product name (must contain a cosmic term)
+        description:
+          type: string
+          maxLength: 500
+          description: Product description
+        price:
+          type: number
+          format: double
+          minimum: 0
+          exclusiveMinimum: true
+          description: Product price
+        categoryId:
+          type: string
+          format: uuid
+          description: Category identifier
+      required:
+        - name
+        - price
+        - categoryId
+
+    ProductListResponseDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductDto'
+        page:
+          type: integer
+          description: Current page number
+        size:
+          type: integer
+          description: Page size
+        totalElements:
+          type: integer
+          format: int64
+          description: Total number of products
+      required:
+        - content
+        - page
+        - size
+        - totalElements
+
+    ProblemDetail:
+      type: object
+      description: RFC 9457 Problem Details
+      properties:
+        type:
+          type: string
+          format: uri
+          description: URI identifying the problem type
+        title:
+          type: string
+          description: Short summary of the problem
+        status:
+          type: integer
+          description: HTTP status code
+        detail:
+          type: string
+          description: Detailed human-readable explanation
+        instance:
+          type: string
+          format: uri
+          description: URI identifying the specific occurrence
+      required:
+        - type
+        - title
+        - status
