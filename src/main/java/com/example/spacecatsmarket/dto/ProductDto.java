@@ -1,12 +1,13 @@
 package com.example.spacecatsmarket.dto;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public record ProductDto(
-        String id,
+        UUID id,
         String name,
         String description,
-        Double price,
+        BigDecimal price,
         UUID categoryId,
         String categoryName
 ) {}

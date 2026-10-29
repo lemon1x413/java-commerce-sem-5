@@ -7,8 +7,8 @@ import java.util.UUID;
 
 public interface ProductService {
     ProductListResponseDto getAllProducts(int page, int size);
-    ProductDto getProductById(String id);
+    ProductDto getProductById(UUID id);
     ProductDto createProduct(ProductCreateDto dto);
-    ProductDto updateProduct(String id, ProductCreateDto dto);
-    void deleteProduct(String id);
+    ProductDto updateProduct(UUID id, ProductCreateDto dto);
+    void deleteProduct(UUID id);
 }

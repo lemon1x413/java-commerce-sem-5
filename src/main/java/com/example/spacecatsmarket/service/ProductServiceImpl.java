@@ -7,6 +7,7 @@ import com.example.spacecatsmarket.dto.ProductDto;
 import com.example.spacecatsmarket.dto.ProductListResponseDto;
 import com.example.spacecatsmarket.exception.ProductNotFoundException;
 import com.example.spacecatsmarket.mapper.ProductMapper;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,7 +19,8 @@ import org.springframework.stereotype.Service;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductMapper productMapper;
-    private final Map<String, Product> products = new LinkedHashMap<>();
+    private final Map<UUID, Product> products = new LinkedHashMap<>();
+    private final Map<UUID, Category> categories = new LinkedHashMap<>();
 
     public ProductServiceImpl(ProductMapper productMapper) {
         this.productMapper = productMapper;
@@ -27,27 +29,31 @@ public class ProductServiceImpl implements ProductService {
 
     private void initMockData() {
         Category yarnCategory = Category.builder()
-                .id(UUID.randomUUID())
+                .id(UUID.fromString("11111111-1111-1111-1111-111111111111"))
                 .name("Cosmic Yarn")
                 .build();
         Category foodCategory = Category.builder()
-                .id(UUID.randomUUID())
+                .id(UUID.fromString("22222222-2222-2222-2222-222222222222"))
                 .name("Space Food")
                 .build();
         Category toysCategory = Category.builder()
-                .id(UUID.randomUUID())
+                .id(UUID.fromString("33333333-3333-3333-3333-333333333333"))
                 .name("Galactic Toys")
                 .build();
 
-        addProduct("Anti-Gravity Star Yarn", "A ball of yarn that floats in zero gravity", 29.99, yarnCategory);
-        addProduct("Galaxy Milk", "Fresh milk sourced from the Milky Way", 15.50, foodCategory);
-        addProduct("Comet Dust Treats", "Delicious snacks made from real comet dust", 42.00, foodCategory);
-        addProduct("Nebula Laser Pointer", "Projects beautiful nebula patterns for cats to chase", 89.99, toysCategory);
-        addProduct("Solar Catnip", "Catnip grown under three suns for maximum potency", 19.95, foodCategory);
+        categories.put(yarnCategory.getId(), yarnCategory);
+        categories.put(foodCategory.getId(), foodCategory);
+        categories.put(toysCategory.getId(), toysCategory);
+
+        addProduct("Anti-Gravity Star Yarn", "A ball of yarn that floats in zero gravity", new BigDecimal("29.99"), yarnCategory);
+        addProduct("Galaxy Milk", "Fresh milk sourced from the Milky Way", new BigDecimal("15.50"), foodCategory);
+        addProduct("Comet Dust Treats", "Delicious snacks made from real comet dust", new BigDecimal("42.00"), foodCategory);
+        addProduct("Nebula Laser Pointer", "Projects beautiful nebula patterns for cats to chase", new BigDecimal("89.99"), toysCategory);
+        addProduct("Solar Catnip", "Catnip grown under three suns for maximum potency", new BigDecimal("19.95"), foodCategory);
     }
 
-    private void addProduct(String name, String description, double price, Category category) {
-        String id = UUID.randomUUID().toString();
+    private void addProduct(String name, String description, BigDecimal price, Category category) {
+        UUID id = UUID.randomUUID();
         Product product = Product.builder()
                 .id(id)
                 .name(name)
@@ -81,7 +87,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDto getProductById(String id) {
+    public ProductDto getProductById(UUID id) {
         Product product = products.get(id);
         if (product == null) {
             throw new ProductNotFoundException(id);
@@ -92,14 +98,25 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDto createProduct(ProductCreateDto dto) {
         Product product = productMapper.toDomain(dto);
-        String id = UUID.randomUUID().toString();
+        UUID id = UUID.randomUUID();
         product.setId(id);
+
+        Category category = categories.get(dto.categoryId());
+        if (category == null) {
+            category = Category.builder()
+                    .id(dto.categoryId())
+                    .name("General Cosmic Goods")
+                    .build();
+            categories.put(category.getId(), category);
+        }
+        product.setCategory(category);
+
         products.put(id, product);
         return productMapper.toDto(product);
     }
 
     @Override
-    public ProductDto updateProduct(String id, ProductCreateDto dto) {
+    public ProductDto updateProduct(UUID id, ProductCreateDto dto) {
         Product existing = products.get(id);
         if (existing == null) {
             throw new ProductNotFoundException(id);
@@ -107,12 +124,25 @@ public class ProductServiceImpl implements ProductService {
         existing.setName(dto.name());
         existing.setDescription(dto.description());
         existing.setPrice(dto.price());
-        existing.getCategory().setId(dto.categoryId());
+
+        Category category = categories.get(dto.categoryId());
+        if (category == null) {
+            category = Category.builder()
+                    .id(dto.categoryId())
+                    .name("General Cosmic Goods")
+                    .build();
+            categories.put(category.getId(), category);
+        }
+        existing.setCategory(category);
+
         return productMapper.toDto(existing);
     }
 
     @Override
-    public void deleteProduct(String id) {
-        products.remove(id);
+    public void deleteProduct(UUID id) {
+        Product existing = products.remove(id);
+        if (existing == null) {
+            throw new ProductNotFoundException(id);
+        }
     }
 }

@@ -5,7 +5,8 @@ import com.example.spacecatsmarket.dto.ProductDto;
 import com.example.spacecatsmarket.dto.ProductListResponseDto;
 import com.example.spacecatsmarket.service.ProductService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.net.URI;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,8 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/products")
 public class ProductController {
 
-    @Autowired
-    private ProductService productService;
+    private final ProductService productService;
+
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
 
     @GetMapping
     public ResponseEntity<ProductListResponseDto> getAllProducts(
@@ -32,25 +36,27 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductDto> getProductById(@PathVariable String id) {
+    public ResponseEntity<ProductDto> getProductById(@PathVariable UUID id) {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
     @PostMapping
     public ResponseEntity<ProductDto> createProduct(@Valid @RequestBody ProductCreateDto dto) {
-        return ResponseEntity.ok(productService.createProduct(dto));
+        ProductDto created = productService.createProduct(dto);
+        return ResponseEntity.created(URI.create("/api/v1/products/" + created.id()))
+                .body(created);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductDto> updateProduct(
-            @PathVariable String id,
-            @RequestBody ProductCreateDto dto) {
+            @PathVariable UUID id,
+            @Valid @RequestBody ProductCreateDto dto) {
         return ResponseEntity.ok(productService.updateProduct(id, dto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable String id) {
+    public ResponseEntity<Void> deleteProduct(@PathVariable UUID id) {
         productService.deleteProduct(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 }
