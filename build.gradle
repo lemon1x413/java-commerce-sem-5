@@ -14,9 +14,19 @@ java {
     }
 }
 
+ext {
+    minimumCoveragePerFile = 0.8
+    filesExcludedFromCoverage = [
+            "**/*MarketApplication.*"
+    ]
+}
+
 repositories {
     mavenCentral()
 }
+
+apply from: "${rootProject.projectDir}/gradle/test.gradle"
+apply from: "${rootProject.projectDir}/gradle/jacoco.gradle"
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -30,9 +40,10 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    // standalone = shaded jar, so its Jetty/Jackson don't clash with Spring Boot's
+    testImplementation 'org.wiremock:wiremock-standalone:3.13.1'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
 }
