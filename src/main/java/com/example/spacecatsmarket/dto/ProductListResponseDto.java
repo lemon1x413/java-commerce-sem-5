@@ -6,5 +6,6 @@ public record ProductListResponseDto(
         List<ProductDto> content,
         int page,
         int size,
-        long totalElements
+        long totalElements,
+        boolean hasNext
 ) {}

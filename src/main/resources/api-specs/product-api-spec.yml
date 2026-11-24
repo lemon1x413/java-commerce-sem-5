@@ -37,6 +37,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductListResponseDto'
+        '400':
+          description: Invalid page or size
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
 
     post:
       summary: Create a new product
@@ -57,7 +63,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductDto'
         '400':
-          description: Validation error
+          description: Validation error or unknown categoryId
           content:
             application/json:
               schema:
@@ -111,7 +117,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductDto'
         '400':
-          description: Validation error
+          description: Validation error or unknown categoryId
           content:
             application/json:
               schema:
@@ -219,11 +225,15 @@ components:
           type: integer
           format: int64
           description: Total number of products
+        hasNext:
+          type: boolean
+          description: Whether a next page exists (saves the client a request that would come back empty)
       required:
         - content
         - page
         - size
         - totalElements
+        - hasNext
 
     ProblemDetail:
       type: object
